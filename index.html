@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aplicativo da Loja Maçônica — ETAPA 5</title>
+  <meta name="theme-color" content="#0f172a" />
+  <style>
+    :root{ --bg:#0f172a;--panel:#111827;--muted:#1f2937;--line:#243245;--text:#e5e7eb;--soft:#9ca3af;--brand:#22c55e;--brand2:#06b6d4;--danger:#ef4444;--warn:#f59e0b }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(160deg,#0f172a,#0b1223 60%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+    header{position:sticky;top:0;background:rgba(15,23,42,.7);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:5}
+    .wrap{max-width:1100px;margin:0 auto;padding:14px}
+    h1{margin:0;font-size:clamp(18px,2.4vw,26px)}
+    .subtitle{color:var(--soft);font-size:12px}
+    main{max-width:1100px;margin:18px auto;padding:0 14px;display:grid;gap:14px;grid-template-columns:1fr 1fr}
+    @media (max-width:980px){main{grid-template-columns:1fr}}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .pad{padding:14px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width:720px){.row{grid-template-columns:1fr}}
+    label{display:block;font-size:12px;color:#cbd5e1;margin-bottom:6px}
+    input,select,button,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #374151;background:#0b1222;color:var(--text)}
+    input[type=date]{color-scheme:dark}
+    .btn{background:var(--brand);border-color:transparent;color:#052013;font-weight:700;cursor:pointer}
+    .btn.secondary{background:var(--brand2);color:#051e22}
+    .btn.ghost{background:transparent;border-color:#334155;color:#cbd5e1}
+    .btn.warn{background:var(--warn);color:#1f1300}
+    .btn.danger{background:var(--danger);color:#230202}
+    .list{display:grid;gap:10px}
+    .item{display:flex;gap:12px;align-items:center;background:var(--muted);border:1px solid #2b3648;padding:10px;border-radius:12px}
+    .avatar{width:56px;height:56px;border-radius:12px;object-fit:cover;background:#0b1222;border:1px solid #334155}
+    .tiny{font-size:11px;color:#9aa3b2}
+    .badge{display:inline-flex;gap:6px;align-items:center;padding:4px 8px;border-radius:999px;background:#0b1222;border:1px solid #2b3648;font-size:11px}
+    .right{display:flex;justify-content:flex-end}
+    .divider{border-top:1px dashed #2b3648;margin:12px 0}
+    .hint{border-left:3px solid var(--brand2);padding:10px 12px;background:#0c1326;border-radius:8px}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    @media (max-width:900px){.grid3{grid-template-columns:1fr}}
+    .sectionTitle{display:flex;align-items:center;gap:8px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap" style="display:flex;gap:12px;align-items:center;justify-content:space-between">
+      <div style="display:flex;gap:10px;align-items:center">
+        <div style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,var(--brand),var(--brand2))"></div>
+        <div>
+          <h1 id="appTitle">Aplicativo da Loja Maçônica</h1>
+          <div class="subtitle" id="appSub">ETAPA 5 — Online • PWA • Transferir Chancelaria</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="badge" id="lodgeBadge" style="display:none"></span>
+        <button class="btn ghost" id="btnPWA">Preparar PWA</button>
+        <button class="btn ghost" id="btnConfig">Configurar Firebase</button>
+        <button class="btn ghost" id="btnAuth">Entrar / Registrar</button>
+        <button class="btn danger" id="btnSair" style="display:none">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- COLUNA 1: cadastro/edição de membro -->
+    <section class="card">
+      <div class="pad">
+        <div class="sectionTitle"><h2 style="margin:0">Cadastro / Edição de Irmão</h2></div>
+        <div class="tiny">Cada usuário pode editar seu próprio cadastro. O <strong>Chanceler da Loja</strong> pode editar/apagar qualquer cadastro da mesma Loja.</div>
+        <div class="divider"></div>
+        <form id="formPessoa">
+          <div class="row">
+            <div>
+              <label>Nome da Loja</label>
+              <input id="lodgeName" placeholder="Ex.: Loja Luz e Verdade nº 123" />
+            </div>
+            <div>
+              <label>ID do registro</label>
+              <input id="registroId" disabled placeholder="(gerado ao salvar)" />
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Nome do Irmão</label>
+              <input id="nomeIrmao" placeholder="Nome completo" required />
+            </div>
+            <div>
+              <label>Nome da Esposa</label>
+              <input id="nomeEsposa" placeholder="Nome completo" />
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Telefone do Irmão</label>
+              <input id="telIrmao" placeholder="(xx) xxxxx-xxxx" />
+            </div>
+            <div>
+              <label>Telefone da Esposa</label>
+              <input id="telEsposa" placeholder="(xx) xxxxx-xxxx" />
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Aniversário do Irmão</label>
+              <input id="niverIrmao" type="date" />
+            </div>
+            <div>
+              <label>Aniversário da Esposa</label>
+              <input id="niverEsposa" type="date" />
+            </div>
+          </div>
+          <div class="grid3">
+            <div>
+              <label>Data da Iniciação</label>
+              <input id="dataIniciacao" type="date" />
+            </div>
+            <div>
+              <label>Data da Elevação</label>
+              <input id="dataElevacao" type="date" />
+            </div>
+            <div>
+              <label>Data da Exaltação</label>
+              <input id="dataExaltacao" type="date" />
+            </div>
+          </div>
+          <div class="divider"></div>
+          <h3>Filhos (até 4)</h3>
+          <div class="grid3">
+            <div>
+              <label>Filho 1 — Nome</label>
+              <input id="f1nome" />
+              <label class="tiny">Aniversário</label>
+              <input id="f1niver" type="date" />
+            </div>
+            <div>
+              <label>Filho 2 — Nome</label>
+              <input id="f2nome" />
+              <label class="tiny">Aniversário</label>
+              <input id="f2niver" type="date" />
+            </div>
+            <div>
+              <label>Filho 3 — Nome</label>
+              <input id="f3nome" />
+              <label class="tiny">Aniversário</label>
+              <input id="f3niver" type="date" />
+            </div>
+          </div>
+          <div class="grid3">
+            <div>
+              <label>Filho 4 — Nome</label>
+              <input id="f4nome" />
+              <label class="tiny">Aniversário</label>
+              <input id="f4niver" type="date" />
+            </div>
+            <div>
+              <label>Observações</label>
+              <textarea id="obs" placeholder="Informações adicionais (opcional)"></textarea>
+            </div>
+            <div>
+              <label>Fotos (Ir./Esposa)</label>
+              <input id="fotoIrmao" type="file" accept="image/*" />
+              <input id="fotoEsposa" type="file" accept="image/*" style="margin-top:6px" />
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn" id="btnSalvar">Salvar / Atualizar</button>
+            <button type="button" class="btn ghost" id="btnNovo">Novo</button>
+            <button type="button" class="btn warn" id="btnApagar">Apagar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- COLUNA 2: diretório / administração da loja -->
+    <aside class="card">
+      <div class="pad">
+        <h2>Diretório da Loja</h2>
+        <div class="row">
+          <input id="busca" placeholder="Buscar por nome" />
+          <select id="filtroLoja"><option value="">Todas as Lojas</option></select>
+        </div>
+        <div class="hint" style="margin-top:10px">
+          <div><strong>Regras</strong></div>
+          <ul class="tiny" style="margin:6px 0 0 16px">
+            <li>Qualquer usuário autenticado pode <strong>consultar</strong> os cadastros.</li>
+            <li>O usuário pode <strong>editar seu próprio</strong> cadastro.</li>
+            <li>O <strong>Chanceler</strong> pode editar/apagar qualquer cadastro da sua Loja.</li>
+            <li>O primeiro usuário que criar a Loja vira <strong>Chanceler</strong> automaticamente.</li>
+          </ul>
+        </div>
+        <div class="divider"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <input id="novaLoja" placeholder="Criar nova Loja (nome)" />
+          <button class="btn secondary" id="btnCriarLoja">Criar Loja</button>
+          <button class="btn ghost" id="btnTornarChanceler" title="Apenas primeiro da Loja">Tornar-me Chanceler (primeiro da loja)</button>
+        </div>
+
+        <div id="areaTransfer" style="display:none">
+          <div class="divider"></div>
+          <h3>Transferir Chancelaria</h3>
+          <div class="tiny" style="margin-bottom:6px">Digite o <strong>e-mail</strong> do irmão que assumirá como Chanceler. Ele precisa ter feito <em>login pelo menos uma vez</em> no sistema.</div>
+          <div class="row">
+            <input id="novoChancelerEmail" type="email" placeholder="email@exemplo.com" />
+            <button class="btn warn" id="btnTransferir">Transferir cargo</button>
+          </div>
+          <div class="tiny" style="margin-top:6px">Ao transferir, o novo irmão receberá a permissão. O atual deixará de ser Chanceler.</div>
+        </div>
+
+        <div class="divider"></div>
+        <div id="lista" class="list"></div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Modais simples -->
+  <dialog id="dlgAuth" style="border:none;border-radius:16px;background:#0b1222;color:var(--text);padding:0;max-width:420px">
+    <div class="pad">
+      <h3>Entrar / Registrar</h3>
+      <div class="tiny">Use e-mail e senha. Sem custos.</div>
+      <div class="divider"></div>
+      <label>Email</label>
+      <input id="authEmail" type="email" />
+      <label style="margin-top:8px">Senha</label>
+      <input id="authSenha" type="password" />
+      <div class="divider"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn ghost" id="authFechar">Cancelar</button>
+        <button class="btn secondary" id="authRegistrar">Registrar</button>
+        <button class="btn" id="authEntrar">Entrar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="dlgCfg" style="border:none;border-radius:16px;background:#0b1222;color:var(--text);padding:0;max-width:600px">
+    <div class="pad">
+      <h3>Configurar Firebase</h3>
+      <div class="tiny">Cole aqui o objeto de configuração (obtido no Console do Firebase → Configurar App Web). Salvamos localmente.</div>
+      <div class="divider"></div>
+      <textarea id="cfgText" style="min-height:160px" placeholder='{
+  "apiKey": "...",
+  "authDomain": "...",
+  "projectId": "..."
+}'></textarea>
+      <div class="divider"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn ghost" id="cfgCancelar">Cancelar</button>
+        <button class="btn" id="cfgSalvar">Salvar & Conectar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Firebase via CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+
+  <script>
+    // ====== Estado ======
+    const el = id => document.getElementById(id);
+    const st = { app:null, auth:null, db:null, user:null, cfg: null, lodgeId:null, isChanceler:false };
+
+    // Carrega/salva cfg local
+    const CFG_KEY = 'loja.firebase.cfg.v1';
+    function loadCfg(){ try{ const raw=localStorage.getItem(CFG_KEY); if(raw) st.cfg=JSON.parse(raw);}catch{} }
+    function saveCfg(){ localStorage.setItem(CFG_KEY, JSON.stringify(st.cfg||{})); }
+
+    loadCfg();
+
+    function initFirebase(){
+      if(!st.cfg?.apiKey){ console.log('Configure o Firebase.'); return; }
+      try{
+        st.app = firebase.initializeApp(st.cfg);
+        st.auth = firebase.auth();
+        st.db = firebase.firestore();
+        watchAuth();
+        loadLodgesToFilter();
+      }catch(e){ console.error(e); alert('Falha ao inicializar Firebase.'); }
+    }
+
+    // ====== Autenticação ======
+    function watchAuth(){ st.auth.onAuthStateChanged(async u=>{ st.user=u||null; refreshAuthUI(); loadLodgesToFilter(); renderLista();
+      // Grava/atualiza perfil público mínimo para permitir busca por e-mail (necessário para transferir Chancelaria)
+      if(st.user && st.db){
+        try{ await st.db.collection('users').doc(st.user.uid).set({ email: st.user.email||'', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge:true }); }catch(e){ console.warn('users profile set failed',e);} }
+    }); }
+
+    function refreshAuthUI(){
+      el('btnAuth').style.display = st.user? 'none':'inline-block';
+      el('btnSair').style.display = st.user? 'inline-block':'none';
+      el('appSub').textContent = st.user? ('Conectado: '+(st.user.email||st.user.uid)) : 'ETAPA 5 — Online • PWA • Transferir Chancelaria';
+      checkChanceler();
+    }
+
+    async function registrar(){
+      const email = el('authEmail').value.trim(); const senha = el('authSenha').value;
+      await st.auth.createUserWithEmailAndPassword(email, senha);
+    }
+    async function entrar(){
+      const email = el('authEmail').value.trim(); const senha = el('authSenha').value;
+      await st.auth.signInWithEmailAndPassword(email, senha);
+    }
+
+    // ====== Lojas / Chanceler ======
+    async function createLodge(name){ requireAuth(); const lodges = st.db.collection('lodges');
+      const ref = await lodges.add({ name, createdAt: firebase.firestore.FieldValue.serverTimestamp(), hasAdmin:false });
+      await loadLodgesToFilter(); alert('Loja criada. Selecione-a no filtro e clique em "Tornar-me Chanceler" (apenas o primeiro).'); return ref.id; }
+
+    async function tornarMeChanceler(){ requireAuth(); const lodgeId = el('filtroLoja').value; if(!lodgeId) return alert('Selecione a Loja no filtro.');
+      const lodgeRef = st.db.collection('lodges').doc(lodgeId); const lodgeSnap = await lodgeRef.get(); if(!lodgeSnap.exists) return alert('Loja não encontrada.');
+      const lodge = lodgeSnap.data(); if(lodge.hasAdmin){ return alert('Esta Loja já possui Chanceler definido.'); }
+      const batch = st.db.batch();
+      batch.set(lodgeRef.collection('admins').doc(st.user.uid), { since: firebase.firestore.FieldValue.serverTimestamp() });
+      batch.update(lodgeRef, { hasAdmin: true });
+      await batch.commit(); await checkChanceler(); alert('Você agora é o Chanceler desta Loja.'); }
+
+    async function checkChanceler(){ st.isChanceler=false; st.lodgeId = el('filtroLoja').value || null; el('lodgeBadge').style.display='none'; el('lodgeBadge').textContent='';
+      if(!st.user || !st.lodgeId || !st.db) { el('areaTransfer').style.display='none'; return; }
+      const adm = await st.db.collection('lodges').doc(st.lodgeId).collection('admins').doc(st.user.uid).get();
+      st.isChanceler = adm.exists;
+      if(st.isChanceler){ el('lodgeBadge').style.display='inline-flex'; el('lodgeBadge').textContent='Chanceler'; el('areaTransfer').style.display='block'; }
+      else { el('areaTransfer').style.display='none'; }
+    }
+
+    async function loadLodgesToFilter(){ if(!st.db) return; const sel = el('filtroLoja');
+      const qs = await st.db.collection('lodges').orderBy('name').get(); const opts = ['<option value="">Todas as Lojas</option>'];
+      qs.forEach(d=> opts.push(`<option value="${d.id}">${d.data().name}</option>`)); sel.innerHTML = opts.join(''); }
+
+    // ====== Transferir Chancelaria ======
+    async function transferirChancelaria(){
+      try{
+        requireAuth(); if(!st.isChanceler) return alert('Apenas o Chanceler atual pode transferir o cargo.');
+        const lodgeId = el('filtroLoja').value; if(!lodgeId) return alert('Selecione a Loja.');
+        const email = el('novoChancelerEmail').value.trim().toLowerCase(); if(!email) return alert('Informe o e-mail do novo Chanceler.');
+        // Busca UID pelo e-mail em users/{uid}
+        const q = await st.db.collection('users').where('email','==',email).limit(1).get();
+        if(q.empty) return alert('Usuário não encontrado. Peça para o novo Chanceler fazer login uma vez no sistema.');
+        const newUid = q.docs[0].id; if(newUid === st.user.uid) return alert('Você já é o Chanceler. Informe outro e-mail.');
+
+        const lodgeRef = st.db.collection('lodges').doc(lodgeId);
+        const adminRefNew = lodgeRef.collection('admins').doc(newUid);
+        const adminRefOld = lodgeRef.collection('admins').doc(st.user.uid);
+        const batch = st.db.batch();
+        batch.set(adminRefNew, { since: firebase.firestore.FieldValue.serverTimestamp() });
+        batch.delete(adminRefOld);
+        // hasAdmin permanece true
+        await batch.commit();
+        alert('Cargo de Chanceler transferido com sucesso.');
+        await checkChanceler();
+      }catch(e){ console.error(e); alert(e.message||'Falha ao transferir.'); }
+    }
+
+    // ====== Membros ======
+    function membroFromForm(existing){ const m = existing || { id: null };
+      m.lodgeId = el('filtroLoja').value || '';
+      m.nomeIrmao = el('nomeIrmao').value.trim(); m.nomeEsposa = el('nomeEsposa').value.trim();
+      m.telIrmao = el('telIrmao').value.trim(); m.telEsposa = el('telEsposa').value.trim();
+      m.niverIrmao = el('niverIrmao').value||''; m.niverEsposa = el('niverEsposa').value||'';
+      m.dataIniciacao = el('dataIniciacao').value||''; m.dataElevacao = el('dataElevacao').value||''; m.dataExaltacao = el('dataExaltacao').value||'';
+      m.obs = el('obs').value.trim();
+      m.filhos = [ {nome: el('f1nome').value.trim(), niver: el('f1niver').value||''}, {nome: el('f2nome').value.trim(), niver: el('f2niver').value||''}, {nome: el('f3nome').value.trim(), niver: el('f3niver').value||''}, {nome: el('f4nome').value.trim(), niver: el('f4niver').value||''} ];
+      return m; }
+
+    async function salvar(){ requireAuth(); if(!st.db) return alert('Configure o Firebase.');
+      const lodgeId = el('filtroLoja').value; if(!lodgeId) return alert('Selecione a Loja no filtro (ou crie uma).');
+      const col = st.db.collection('members'); const id = el('registroId').value || null; const data = membroFromForm(); data.lodgeId = lodgeId; data.ownerUid = st.user.uid; data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+      if(id){ const docRef = col.doc(id); const snap = await docRef.get(); if(!snap.exists) return alert('Registro não encontrado.'); const canEdit = (snap.data().ownerUid === st.user.uid) || st.isChanceler; if(!canEdit) return alert('Sem permissão para editar este cadastro.'); await docRef.update(data); }
+      else { data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); const ref = await col.add(data); el('registroId').value = ref.id; }
+      alert('Salvo com sucesso!'); renderLista(); }
+
+    async function apagar(){ requireAuth(); const id = el('registroId').value; if(!id) return alert('Nenhum registro carregado.');
+      const docRef = st.db.collection('members').doc(id); const snap = await docRef.get(); if(!snap.exists) return; const canDel = (snap.data().ownerUid === st.user.uid) || st.isChanceler; if(!canDel) return alert('Sem permissão para apagar.'); if(confirm('Apagar este cadastro?')){ await docRef.delete(); el('registroId').value=''; limparForm(); renderLista(); } }
+
+    function limparForm(){ ['registroId','nomeIrmao','nomeEsposa','telIrmao','telEsposa','niverIrmao','niverEsposa','dataIniciacao','dataElevacao','dataExaltacao','obs','f1nome','f1niver','f2nome','f2niver','f3nome','f3niver','f4nome','f4niver'].forEach(id=> el(id).value=''); }
+
+    async function renderLista(){ if(!st.db) return; const wrap = el('lista'); wrap.innerHTML='';
+      const q = el('busca').value?.toLowerCase()||''; const lodgeId = el('filtroLoja').value; let query = st.db.collection('members'); if(lodgeId) query = query.where('lodgeId','==',lodgeId);
+      const qs = await query.orderBy('nomeIrmao').get(); const docs = []; qs.forEach(d=>{ const v = d.data(); v.id=d.id; docs.push(v); });
+      const itens = docs.filter(p=> (p.nomeIrmao||'').toLowerCase().includes(q)); if(!itens.length){ const e=document.createElement('div'); e.className='tiny'; e.textContent='Nenhum cadastro'; wrap.appendChild(e); return; }
+      itens.forEach(p=>{ const div=document.createElement('div'); div.className='item'; const img=document.createElement('div'); img.className='avatar'; img.style.display='grid'; img.style.placeItems='center'; img.textContent='📇'; const info=document.createElement('div'); info.style.flex='1'; const title=document.createElement('div'); title.innerHTML = `<strong>${p.nomeIrmao||'(Sem nome)'}</strong>`; const sub=document.createElement('div'); sub.className='tiny'; sub.textContent = `${p.lodgeId} • ${(p.telIrmao||'')}`; const btns=document.createElement('div'); btns.style.display='flex'; btns.style.gap='6px'; const ver=document.createElement('button'); ver.textContent='Ver / Editar'; ver.className='btn ghost'; ver.onclick=()=>loadToForm(p.id); const del=document.createElement('button'); del.textContent='Apagar'; del.className='btn danger'; del.onclick=async ()=>{ el('registroId').value=p.id; await apagar(); }; btns.appendChild(ver); btns.appendChild(del); info.appendChild(title); info.appendChild(sub); div.appendChild(img); div.appendChild(info); div.appendChild(btns); wrap.appendChild(div); }); }
+
+    async function loadToForm(id){ const d=await st.db.collection('members').doc(id).get(); const p=d.data(); if(!p) return; el('registroId').value = id; el('nomeIrmao').value=p.nomeIrmao||''; el('nomeEsposa').value=p.nomeEsposa||''; el('telIrmao').value=p.telIrmao||''; el('telEsposa').value=p.telEsposa||''; el('niverIrmao').value=p.niverIrmao||''; el('niverEsposa').value=p.niverEsposa||''; el('dataIniciacao').value=p.dataIniciacao||''; el('dataElevacao').value=p.dataElevacao||''; el('dataExaltacao').value=p.dataExaltacao||''; el('obs').value=p.obs||''; el('f1nome').value=p.filhos?.[0]?.nome||''; el('f1niver').value=p.filhos?.[0]?.niver||''; el('f2nome').value=p.filhos?.[1]?.nome||''; el('f2niver').value=p.filhos?.[1]?.niver||''; el('f3nome').value=p.filhos?.[2]?.nome||''; el('f3niver').value=p.filhos?.[2]?.niver||''; el('f4nome').value=p.filhos?.[3]?.nome||''; el('f4niver').value=p.filhos?.[3]?.niver||''; }
+
+    // ====== Upload de foto ======
+    async function fileToBase64(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
+    async function handleFotos(){ const id = el('registroId').value; if(!id) return; const col = st.db.collection('members'); const docRef = col.doc(id); const snap = await docRef.get(); if(!snap.exists) return; const canEdit = (snap.data().ownerUid === (st.user?.uid)) || st.isChanceler; if(!canEdit) return alert('Sem permissão para alterar fotos.'); const fi = el('fotoIrmao').files[0]; const fe = el('fotoEsposa').files[0]; const patch = {}; if(fi) patch.fotoIrmao = await fileToBase64(fi); if(fe) patch.fotoEsposa = await fileToBase64(fe); if(Object.keys(patch).length){ await docRef.update(patch); alert('Fotos atualizadas.'); renderLista(); } el('fotoIrmao').value=''; el('fotoEsposa').value=''; }
+
+    // ====== PWA: gerar arquivos e registrar ======
+    function baixar(nome, conteudo, tipo='text/plain'){ const blob = new Blob([conteudo], {type: tipo}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=nome; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000); }
+
+    function prepararPWA(){
+      const manifest = {
+        name: 'Aplicativo da Loja Maçônica',
+        short_name: 'Loja Maçônica',
+        start_url: '.',
+        display: 'standalone',
+        background_color: '#0b1223',
+        theme_color: '#0f172a',
+        icons: [
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }
+        ]
+      };
+      baixar('manifest.webmanifest', JSON.stringify(manifest, null, 2), 'application/manifest+json');
+      const sw = `const CACHE='loja-cache-v1'; const ASSETS=['./','./index.html','./manifest.webmanifest'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))))});
+self.addEventListener('fetch',e=>{const req=e.request; e.respondWith(caches.match(req).then(c=>c||fetch(req).then(res=>{const copy=res.clone(); caches.open(CACHE).then(cache=>cache.put(req,copy)); return res;})).catch(()=>caches.match('./')))});`;
+      baixar('sw.js', sw, 'text/javascript');
+      alert('Arquivos PWA gerados: manifest.webmanifest e sw.js. Faça upload junto com o index.html quando publicar.');
+    }
+
+    function registrarSW(){ if(location.protocol.startsWith('http') && 'serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(console.warn); } }
+
+    // ====== Helpers ======
+    function requireAuth(){ if(!st.user) throw new Error('Entre com sua conta antes.'); }
+
+    // ====== Eventos ======
+    el('btnAuth').onclick = ()=> el('dlgAuth').showModal();
+    el('authFechar').onclick = ()=> el('dlgAuth').close();
+    el('authRegistrar').onclick = async ()=>{ try{ await registrar(); el('dlgAuth').close(); }catch(e){ alert(e.message);} };
+    el('authEntrar').onclick = async ()=>{ try{ await entrar(); el('dlgAuth').close(); }catch(e){ alert(e.message);} };
+    el('btnSair').onclick = ()=> st.auth.signOut();
+
+    el('btnConfig').onclick = ()=>{ el('cfgText').value = st.cfg? JSON.stringify(st.cfg, null, 2):''; el('dlgCfg').showModal(); };
+    el('cfgCancelar').onclick = ()=> el('dlgCfg').close();
+    el('cfgSalvar').onclick = ()=>{ try{ st.cfg = JSON.parse(el('cfgText').value); saveCfg(); el('dlgCfg').close(); initFirebase(); }catch{ alert('JSON inválido.'); } };
+
+    el('btnSalvar').onclick = async ()=>{ try{ await salvar(); await handleFotos(); }catch(e){ alert(e.message||'Erro ao salvar.'); } };
+    el('btnNovo').onclick = ()=> limparForm();
+    el('btnApagar').onclick = ()=> apagar();
+
+    el('filtroLoja').onchange = async ()=>{ await checkChanceler(); renderLista(); };
+    el('busca').oninput = ()=> renderLista();
+    el('btnCriarLoja').onclick = async ()=>{ const n = el('novaLoja').value.trim(); if(!n) return alert('Digite o nome da Loja.'); await createLodge(n); el('novaLoja').value=''; };
+    el('btnTornarChanceler').onclick = ()=> tornarMeChanceler();
+
+    el('btnTransferir').onclick = ()=> transferirChancelaria();
+
+    el('btnPWA').onclick = ()=> { prepararPWA(); };
+
+    // start
+    initFirebase();
+    registrarSW();
+  </script>
+</body>
+</html>
